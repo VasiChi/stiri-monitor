@@ -1,34 +1,40 @@
-"""
-Monitor Stiri Romanesti
-"""
-
 import feedparser
 import schedule
 import time
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import urllib.request
+import urllib.parse
+import json
 from datetime import datetime
 from colorama import Fore, init
 
 init(autoreset=True)
 
 RSS_FEEDS = {
-    "HotNews":   "https://www.hotnews.ro/rss",
-    "G4Media":   "https://www.g4media.ro/feed",
-    "Profit.ro": "https://www.profit.ro/rss",
-    "ZF":        "https://www.zf.ro/rss",
+    "HotNews":         "https://www.hotnews.ro/rss",
+    "G4Media":         "https://www.g4media.ro/feed",
+    "Profit.ro":       "https://www.profit.ro/rss",
+    "ZF":              "https://www.zf.ro/rss",
+    "Economica":       "https://economica.net/feed",
+    "Wall-Street.ro":  "https://www.wall-street.ro/rss.xml",
+    "Bursa.ro":        "https://www.bursa.ro/rss.xml",
+    "Capital.ro":      "https://www.capital.ro/feed",
+    "Digi24":          "https://www.digi24.ro/rss.xml",
+    "News.ro":         "https://www.news.ro/rss",
+    "BusinessMagazin": "https://www.businessmagazin.ro/feed",
 }
 
 CUVINTE_CHEIE = [
-    "evenimente", "eveniment", "corporate",
-    "profit", "angajati", "angajat", "angajare", "angajari",
+    "eveniment", "evenimente", "conferinta", "summit",
+    "corporate", "companie", "companii", "afaceri",
+    "profit", "venituri", "rezultate",
+    "angajat", "angajati", "angajare", "angajari",
+    "recrutare", "locuri de munca", "concediere",
 ]
 
-ORA_RULARE   = "08:00"
-EMAIL_FROM   = "vassich@gmail.com"
-EMAIL_TO     = "marian.chirita@universum.ro"
-EMAIL_PAROLA = "iovu zngs ywpm jbts"
+ORA_RULARE      = "08:00"
+EMAIL_FROM      = "vassich@gmail.com"
+EMAIL_TO        = "marian.chirita@universum.ro"
+SENDGRID_APIKEY = "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"
 
 def contine_cuvant_cheie(text):
     text_lower = text.lower()
@@ -36,14 +42,22 @@ def contine_cuvant_cheie(text):
 
 def trimite_email(html_body, total):
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"Stiri relevante - {datetime.now().strftime('%d %B %Y')} ({total} articole)"
-        msg["From"] = EMAIL_FROM
-        msg["To"] = EMAIL_TO
-        msg.attach(MIMEText(html_body, "html"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(EMAIL_FROM, EMAIL_PAROLA)
-            server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
+        data = json.dumps({
+            "personalizations": [{"to": [{"email": EMAIL_TO}]}],
+            "from": {"email": EMAIL_FROM},
+            "subject": f"Stiri relevante - {datetime.now().strftime('%d %B %Y')} ({total} articole)",
+            "content": [{"type": "text/html", "value": html_body}]
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.sendgrid.com/v3/mail/send",
+            data=data,
+            headers={
+                "Authorization": f"Bearer {SENDGRID_APIKEY}",
+                "Content-Type": "application/json"
+            }
+        )
+        urllib.request.urlopen(req)
         print(Fore.GREEN + f"  Email trimis catre {EMAIL_TO}")
     except Exception as e:
         print(Fore.RED + f"  Eroare email: {e}")
@@ -65,10 +79,10 @@ def scaneaza_toate_sursele():
             feed = feedparser.parse(url)
             articole_html = []
             for entry in feed.entries:
-                titlu     = entry.get("title", "")
-                descriere = entry.get("summary", "")
-                link      = entry.get("link", "")
-                data      = entry.get("published", "")
+                titlu          = entry.get("title", "")
+                descriere      = entry.get("summary", "")
+                link           = entry.get("link", "")
+                data           = entry.get("published", "")
                 cuvinte_gasite = contine_cuvant_cheie(f"{titlu} {descriere}")
                 if cuvinte_gasite:
                     total_gasite += 1
@@ -111,6 +125,7 @@ def scaneaza_toate_sursele():
 
 if __name__ == "__main__":
     print(Fore.CYAN + "\nMonitor pornit!")
+    print(f"  {len(RSS_FEEDS)} surse monitorizate")
     print(f"  Email catre: {EMAIL_TO}")
     print(f"  Rulare zilnica la: {ORA_RULARE}")
     print(Fore.WHITE + "  (Ctrl+C pentru a opri)\n")
