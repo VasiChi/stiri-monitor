@@ -2,25 +2,25 @@ import feedparser
 import schedule
 import time
 import urllib.request
-import urllib.parse
 import json
+import os
 from datetime import datetime
 from colorama import Fore, init
 
 init(autoreset=True)
 
 RSS_FEEDS = {
+    # Romania
     "HotNews":         "https://www.hotnews.ro/rss",
-    "G4Media":         "https://www.g4media.ro/feed",
     "Profit.ro":       "https://www.profit.ro/rss",
     "ZF":              "https://www.zf.ro/rss",
-    "Economica":       "https://economica.net/feed",
-    "Wall-Street.ro":  "https://www.wall-street.ro/rss.xml",
-    "Bursa.ro":        "https://www.bursa.ro/rss.xml",
-    "Capital.ro":      "https://www.capital.ro/feed",
-    "Digi24":          "https://www.digi24.ro/rss.xml",
-    "News.ro":         "https://www.news.ro/rss",
-    "BusinessMagazin": "https://www.businessmagazin.ro/feed",
+    "Puls.ro":         "https://www.puls.ro/rss",
+    "iQads":           "https://www.iqads.ro/rss",
+    # International
+    "Reuters":         "https://feeds.reuters.com/reuters/businessNews",
+    "Bloomberg":       "https://feeds.bloomberg.com/markets/news.rss",
+    "CNN Business":    "http://rss.cnn.com/rss/money_news_international.rss",
+    "MarketWatch":     "http://feeds.marketwatch.com/marketwatch/topstories",
 }
 
 CUVINTE_CHEIE = [
@@ -29,12 +29,20 @@ CUVINTE_CHEIE = [
     "profit", "venituri", "rezultate",
     "angajat", "angajati", "angajare", "angajari",
     "recrutare", "locuri de munca", "concediere",
+    "teambuilding", "team building",
+    "echipa", "echipe",
+    "investitii", "investitie", "investment",
+    "extindere", "expansiune", "expansion",
+    "cumpara", "achizitie", "acquisition",
+    "campanie", "campaign",
+    "aniversare", "anniversary",
+    "serbeaza", "celebreaza", "celebrates",
 ]
 
-ORA_RULARE      = "08:00"
+ORA_RULARE      = "07:00"
 EMAIL_FROM      = "vassich@gmail.com"
 EMAIL_TO        = "marian.chirita@universum.ro"
-SENDGRID_APIKEY = "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"
+SENDGRID_APIKEY = os.environ.get("SENDGRID_API_KEY", "")
 
 def contine_cuvant_cheie(text):
     text_lower = text.lower()
@@ -48,7 +56,6 @@ def trimite_email(html_body, total):
             "subject": f"Stiri relevante - {datetime.now().strftime('%d %B %Y')} ({total} articole)",
             "content": [{"type": "text/html", "value": html_body}]
         }).encode("utf-8")
-
         req = urllib.request.Request(
             "https://api.sendgrid.com/v3/mail/send",
             data=data,
