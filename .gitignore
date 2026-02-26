@@ -1,0 +1,4 @@
+istoric_linkuri.json
+*.pyc
+__pycache__/
+.env
