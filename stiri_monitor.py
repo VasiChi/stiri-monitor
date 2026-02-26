@@ -102,6 +102,12 @@ EMAIL_FROM       = "vassich@gmail.com"
 EMAIL_TO         = "marian.chirita@universum.ro"
 SENDGRID_APIKEY  = os.environ.get("SENDGRID_API_KEY", "")
 
+# Culori tema
+CULOARE_HEADER   = "#1a1a2e"   # Negru/antracit
+CULOARE_TINTA    = "#c9a84c"   # Auriu
+CULOARE_URGENT   = "#cc0000"   # Rosu
+CULOARE_HOT      = "#ff6600"   # Portocaliu
+
 # ── ISTORIC ──────────────────────────────────────────────────
 
 def incarca_istoric():
@@ -251,23 +257,23 @@ def scaneaza_toate_sursele():
                 ])
                 if companii_gasite:
                     taguri += " " + " ".join([
-                        f"<span style='background:#1a1a1a;color:white;padding:2px 8px;border-radius:12px;font-size:12px;'>🎯 {c}</span>"
+                        f"<span style='background:{CULOARE_TINTA};color:white;padding:2px 8px;border-radius:12px;font-size:12px;'>🎯 {c}</span>"
                         for c in companii_gasite
                     ])
 
                 if is_target:
-                    badge = "<span style='background:#6600cc;color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold;margin-left:8px;'>🎯 COMPANIE TINTA</span>"
-                    border_color = "#6600cc"
-                    bg_color = "#f5f0ff"
-                    print(Fore.MAGENTA + f"\n  🎯 COMPANIE TINTA: {titlu}")
+                    badge = f"<span style='background:{CULOARE_TINTA};color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold;margin-left:8px;'>🎯 COMPANIE TINTA</span>"
+                    border_color = CULOARE_TINTA
+                    bg_color = "#fdfbf3"
+                    print(Fore.YELLOW + f"\n  🎯 COMPANIE TINTA: {titlu}")
                 elif is_urgent:
-                    badge = "<span style='background:#cc0000;color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold;margin-left:8px;'>🚨 URGENT</span>"
-                    border_color = "#cc0000"
+                    badge = f"<span style='background:{CULOARE_URGENT};color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold;margin-left:8px;'>🚨 URGENT</span>"
+                    border_color = CULOARE_URGENT
                     bg_color = "#fff0f0"
                     print(Fore.RED + f"\n  🚨 URGENT: {titlu}")
                 elif is_hot:
-                    badge = "<span style='background:#ff6600;color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold;margin-left:8px;'>🔥 HOT LEAD</span>"
-                    border_color = "#ff6600"
+                    badge = f"<span style='background:{CULOARE_HOT};color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:bold;margin-left:8px;'>🔥 HOT LEAD</span>"
+                    border_color = CULOARE_HOT
                     bg_color = "#fff5ee"
                     print(Fore.YELLOW + f"\n  🔥 HOT: {titlu}")
                 else:
@@ -280,7 +286,7 @@ def scaneaza_toate_sursele():
                 print(Fore.WHITE + f"  {link}")
 
                 card = f"""
-                    <div style="border-left:3px solid {border_color};margin:12px 0;padding:10px 15px;background:{bg_color};border-radius:0 8px 8px 0;">
+                    <div style="border-left:4px solid {border_color};margin:12px 0;padding:10px 15px;background:{bg_color};border-radius:0 8px 8px 0;">
                         <a href="{link}" style="font-size:15px;font-weight:600;color:#111;text-decoration:none;">{titlu}</a>{badge}<br>
                         <div style="margin:6px 0;">{taguri}</div>
                         <span style="color:#999;font-size:12px;">📅 {data} &nbsp;|&nbsp; {sursa}</span>
@@ -295,7 +301,7 @@ def scaneaza_toate_sursele():
                     articole_html.append(card)
 
             if articole_html:
-                html_sectiuni.append(f"<h2 style='color:#333;border-bottom:2px solid #1a73e8;padding-bottom:6px;'>{sursa}</h2>{''.join(articole_html)}")
+                html_sectiuni.append(f"<h2 style='color:#333;border-bottom:2px solid {CULOARE_HEADER};padding-bottom:6px;'>{sursa}</h2>{''.join(articole_html)}")
             else:
                 print(Fore.WHITE + "  Niciun articol relevant.")
 
@@ -310,29 +316,29 @@ def scaneaza_toate_sursele():
 
     if total_gasite > 0:
         companii_section = f"""
-            <div style="background:#f5f0ff;border:2px solid #6600cc;border-radius:10px;padding:20px;margin-bottom:25px;">
-                <h2 style="color:#6600cc;margin-top:0;">🎯 COMPANII TINTA — Suna acum!</h2>
+            <div style="background:#fdfbf3;border:2px solid {CULOARE_TINTA};border-radius:10px;padding:20px;margin-bottom:25px;">
+                <h2 style="color:{CULOARE_TINTA};margin-top:0;">🎯 COMPANII TINTA — Suna acum!</h2>
                 {''.join(html_companii)}
             </div>
         """ if html_companii else ""
 
         urgent_section = f"""
-            <div style="background:#fff0f0;border:2px solid #cc0000;border-radius:10px;padding:20px;margin-bottom:25px;">
-                <h2 style="color:#cc0000;margin-top:0;">🚨 URGENTE — Contacteaza azi!</h2>
+            <div style="background:#fff0f0;border:2px solid {CULOARE_URGENT};border-radius:10px;padding:20px;margin-bottom:25px;">
+                <h2 style="color:{CULOARE_URGENT};margin-top:0;">🚨 URGENTE — Contacteaza azi!</h2>
                 {''.join(html_urgente)}
             </div>
         """ if html_urgente else ""
 
         banner = f"""
-            <div style="background:#333;color:white;padding:12px 20px;border-radius:8px;margin-bottom:20px;">
+            <div style="background:{CULOARE_HEADER};color:white;padding:12px 20px;border-radius:8px;margin-bottom:20px;">
                 🎯 {companii_count} companii tinta &nbsp;|&nbsp; 🚨 {urgent_count} urgente &nbsp;|&nbsp; 🔥 {hot_count} hot leads
             </div>
         """ if (companii_count + urgent_count + hot_count) > 0 else ""
 
         html = f"""<html><body style="font-family:Arial,sans-serif;max-width:700px;margin:auto;padding:20px;">
-            <div style="background:#1a73e8;color:white;padding:20px;border-radius:10px;margin-bottom:20px;">
+            <div style="background:{CULOARE_HEADER};color:white;padding:20px;border-radius:10px;margin-bottom:20px;">
                 <h1 style="margin:0;">Monitor Stiri — Universum</h1>
-                <p style="margin:5px 0 0;">{datetime.now().strftime('%d %B %Y, %H:%M')} &mdash; {total_gasite} articole din ultimele 24h</p>
+                <p style="margin:5px 0 0;opacity:0.8;">{datetime.now().strftime('%d %B %Y, %H:%M')} &mdash; {total_gasite} articole din ultimele 24h</p>
             </div>
             {banner}
             {companii_section}
